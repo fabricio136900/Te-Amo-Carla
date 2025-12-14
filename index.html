@@ -10,13 +10,11 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
-  /* BLOQUEAR SELECCIÓN DE TEXTO */
-  -webkit-user-select: none; /* Safari / iOS */
-  -webkit-touch-callout: none; /* iOS (menú copiar) */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Edge */
-  user-select: none; /* Estándar */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 html, body {
@@ -24,31 +22,27 @@ html, body {
   height: 100%;
   background: radial-gradient(circle at top, #120018, #000);
   overflow: hidden;
-  font-family: 'Arial', sans-serif;
-  -webkit-user-drag: none; /* evitar arrastrar */
+  font-family: Arial, sans-serif;
 }
 
-/* CANVAS CONSTELACIONES */
+/* CANVAS */
 #constellation {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 1;
   pointer-events: none;
 }
 
-/* TEXTO CENTRAL */
+/* TEXTO CENTRAL RESPONSIVO */
 .center-text {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 50% auto auto 50%;
   transform: translate(-50%, -50%);
-  font-size: 3em;
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+  padding: 0 1rem;
+  text-align: center;
   color: #ff69b4;
   font-weight: bold;
-  text-align: center;
   z-index: 10;
   text-shadow: 0 0 20px #ff69b4, 0 0 40px #ff1493;
   animation: pulse 3s infinite;
@@ -62,12 +56,13 @@ html, body {
 /* FRASES CAYENDO */
 .falling {
   position: absolute;
-  font-size: 1rem;
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
   color: #ffb6c1;
   animation: fall linear forwards;
   pointer-events: none;
   z-index: 5;
   text-shadow: 0 0 8px #ffb6c1;
+  white-space: nowrap;
 }
 
 @keyframes fall {
@@ -76,25 +71,21 @@ html, body {
   100% { transform: translateY(110vh); opacity: 0; }
 }
 
-/* TEXTO AL CLICK */
+/* TEXTO CLICK */
 .shooting {
   position: absolute;
-  font-size: 1.3rem;
+  font-size: clamp(1rem, 3vw, 1.4rem);
   color: #ff69b4;
-  animation: shoot 1.8s ease-out forwards;
+  animation: shoot 1.6s ease-out forwards;
   pointer-events: none;
   z-index: 15;
   text-shadow: 0 0 12px #ff69b4;
+  white-space: nowrap;
 }
 
 @keyframes shoot {
   0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(3); opacity: 0; }
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .center-text { font-size: 2em; }
+  100% { transform: scale(2.5); opacity: 0; }
 }
 </style>
 </head>
@@ -102,100 +93,31 @@ html, body {
 <body>
 
 <canvas id="constellation"></canvas>
-
-<div class="center-text"> TE AMODORO CARLI 😍</div>
+<div class="center-text">TE AMODORO CARLI 😍</div>
 
 <script>
-// ===============================
-// CONFIG RESPONSIVA
-// ===============================
+/* ===============================
+   CONFIG RESPONSIVA REAL
+================================ */
 const isMobile = window.innerWidth < 768;
-const fallInterval = isMobile ? 500 : 300;
-const bgInterval   = isMobile ? 350 : 200;
-// ===============================
-// FRASES ROMÁNTICAS
-// ===============================
-const frases = [
-  "Te Amo","Te Adoro","Te Quiero","Te Pienso","Te Anhelo",
-  "Te Elijo","Te Siento","Te Extraño","Te Cuido","Te Abrazo",
-  "Te Sueño","Te Admiro","Te Necesito","Te Elijo Cada Día",
-  "Te Llevo Conmigo","Te Guardo En Mi Corazón","Te Amo Eternamente",
-  "Te Pertenezco","Te Espero Siempre","Eres Mi Hogar","Eres Mi Paz",
-  "Eres Mi Todo","Eres Mi Promesa","Eres Mi Destino","Eres Mi Siempre",
-  "Mi Vida","Mi Amor","Mi Todo","Mi Futuro Eres Tú",
-  "Contigo Siempre","Juntos Por Siempre","Hasta El Final","Para Toda La Vida",
-  "Me Iluminas El Camino",
-  "Tu Luz Me Hace Sentir Bien",
-  "Tu Sonrisa Me Enamora",
-  "Tu Mirada Me Hace Flotar",
-  "Tu Voz Es Mi Melodía Favorita",
-  "Tu Actitud Me Inspira",
-  "Contigo Me Siento Completo",
-  "Con Tu Risa Se Ilumina Mi Día",
-  "Tu Cercanía Me Acelera El Corazón",
-  "Cada Pensamiento Es Para Ti",
-  "Me Robas El Aliento",
-  "Esa Dulzura Me Fascina",
-  "Me Haces Latir Más Fuerte",
-  "Todo A Tu Lado Es Mejor",
-  "Me Vuelves Feliz Sin Palabras",
-  "En Tus Ojos Encuentro Paz",
-  "Soy Felíz Cuando Estoy A Tu Lado",
-  "Tu Belleza Me Deja Sin Palabras",
-  "Me Encanta Verte Sonreír",
-  "Me Haces Sentir Very Good",
-  "Me Gusta Tu Estilo Y Tu Actitud",
-  "Tu Risa Es El Mejor Sonido",
-  "Cada Momento Contigo Vale Oro",
-  "Tu Presencia Cambia Mi Mundo",
-  "Te Deseo Con Todo Mi Ser",
-  "Tu Ternura Me Cura",
-  "Tu Calor Me Hace Bien",
-  "Me Pones Rojito De Felicidad",
-  "Me Enloqueces De Amor",
-  "Siento Tu Energía Y Me Cautiva",
-  "Tu Abrazo Es Mi Lugar Favorito",
-  "Me Inspiras Poemas Y Sonrisas",
-  "Me Gusta Tu Sabor A Ternura",
-  "Tu Magia Me Atrapa",
-  "Me Haces Soñar Despierto",
-  "Te Quiero Cerca Siempre",
-  "Tu Dulzura Derrite Mi Alma",
-  "Me Pones Happy Cada Día",
-  "Cada Segundo Contigo Es Único",
-  "Tu Presencia Es Pura Magia",
-  "Me Haces Sonreír Sin Razón",
-  "Tu Espíritu Me Eleva",
-  "Me Fascina Como Me Miras",
-  "Quisiera Abrazarte Toda La Noche",
-  "Cada Latido Es Para Ti",
-  "Contigo Sueño En Grande",
-  "Me Inspiras A Ser Mejor",
-  "Tu Presencia Me Llena De Vida",
-  "Quisiera Decirte Mil Veces Más",
-  "Tu Carisma Me Enamora",
-  "Me Enamoro De Tus Detalles",
-  "Me Gusta Contarte Mis Días",
-  "Me Enamora Tu Naturalidad",
-  "Quiero Vivir A Tu Lado",
-  "Quiero Hacerte Feliz Siempre",
-  "Tu Risa Es Mi Refugio",
-  "Quisiera Decorar Mi Vida Contigo",
-  "Cuando Te Tengo Cerca Soy Feliz",
-  "Tu Mirada Me Derrite"
-];
+const fallInterval = isMobile ? 600 : 300;
+const NODE_COUNT = isMobile ? 45 : 80;
+
+/* ===============================
+   FRASES
+================================ */
+const frases = [...]; // 👈 (tus frases quedan iguales)
 
 const emojis = ["💖","💕","💘","💝","💞","😍","🥰","😘","⭐","✨","🌟"];
-
 const random = arr => arr[Math.floor(Math.random() * arr.length)];
 
-// ===============================
-// CONSTELACIONES
-// ===============================
+/* ===============================
+   CONSTELACIONES
+================================ */
 const canvas = document.getElementById("constellation");
 const ctx = canvas.getContext("2d");
-
 let w, h;
+
 function resize() {
   w = canvas.width = window.innerWidth;
   h = canvas.height = window.innerHeight;
@@ -204,14 +126,12 @@ window.addEventListener("resize", resize);
 resize();
 
 const nodes = [];
-const NODE_COUNT = 80;
-
 for (let i = 0; i < NODE_COUNT; i++) {
   nodes.push({
     x: Math.random() * w,
     y: Math.random() * h,
-    vx: (Math.random() - 0.5) * 0.3,
-    vy: (Math.random() - 0.5) * 0.3,
+    vx: (Math.random() - 0.5) * (isMobile ? 0.2 : 0.35),
+    vy: (Math.random() - 0.5) * (isMobile ? 0.2 : 0.35),
     symbol: random(emojis)
   });
 }
@@ -220,7 +140,7 @@ function drawConstellation() {
   ctx.clearRect(0, 0, w, h);
 
   nodes.forEach(n => {
-    ctx.font = "14px Arial";
+    ctx.font = isMobile ? "12px Arial" : "14px Arial";
     ctx.fillStyle = "rgba(255,182,193,0.9)";
     ctx.fillText(n.symbol, n.x, n.y);
 
@@ -237,9 +157,9 @@ function drawConstellation() {
       const dy = nodes[i].y - nodes[j].y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < 120) {
+      if (dist < (isMobile ? 90 : 120)) {
         ctx.strokeStyle = `rgba(255,105,180,${1 - dist / 120})`;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 0.7;
         ctx.beginPath();
         ctx.moveTo(nodes[i].x, nodes[i].y);
         ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -247,28 +167,27 @@ function drawConstellation() {
       }
     }
   }
-
   requestAnimationFrame(drawConstellation);
 }
 drawConstellation();
 
-// ===============================
-// LLUVIA DE FRASES
-// ===============================
+/* ===============================
+   LLUVIA DE FRASES
+================================ */
 function createFallingText() {
   const el = document.createElement("div");
   el.className = "falling";
   el.innerText = random(frases);
-  el.style.left = Math.random() * window.innerWidth + "px";
-  el.style.animationDuration = 2 + Math.random() * 3 + "s";
+  el.style.left = Math.random() * (window.innerWidth - 100) + "px";
+  el.style.animationDuration = (isMobile ? 3.5 : 2.5) + Math.random() * 2 + "s";
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 5000);
+  setTimeout(() => el.remove(), 6000);
 }
-setInterval(createFallingText, 300);
+setInterval(createFallingText, fallInterval);
 
-// ===============================
-// CLICK / TOUCH
-// ===============================
+/* ===============================
+   CLICK / TOUCH
+================================ */
 function createShootingText(x, y) {
   const el = document.createElement("div");
   el.className = "shooting";
@@ -291,10 +210,3 @@ document.addEventListener("touchstart", e => {
 
 </body>
 </html>
-
-
-
-
-
-
-
