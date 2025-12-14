@@ -107,6 +107,12 @@ html, body {
 
 <script>
 // ===============================
+// CONFIG RESPONSIVA
+// ===============================
+const isMobile = window.innerWidth < 768;
+const fallInterval = isMobile ? 500 : 300;
+const bgInterval   = isMobile ? 350 : 200;
+// ===============================
 // FRASES ROMÁNTICAS
 // ===============================
 const frases = [
@@ -285,6 +291,7 @@ document.addEventListener("touchstart", e => {
 
 </body>
 </html>
+
 
 
 
